@@ -1,0 +1,81 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import math
+from random import choice
+
+data = [
+    (0.697, 0.460), (0.774, 0.376), (0.634, 0.264), (0.608, 0.318),
+    (0.556, 0.215), (0.403, 0.237), (0.481, 0.149), (0.437, 0.211),
+    (0.666, 0.091), (0.243, 0.267), (0.245, 0.057), (0.343, 0.099),
+    (0.639, 0.161), (0.657, 0.198), (0.360, 0.370), (0.593, 0.042),
+    (0.719, 0.103), (0.359, 0.188), (0.339, 0.241), (0.282, 0.257),
+    (0.748, 0.232), (0.714, 0.346), (0.483, 0.312), (0.478, 0.437),
+    (0.525, 0.369), (0.751, 0.489), (0.532, 0.472), (0.473, 0.376),
+    (0.725, 0.445), (0.446, 0.459)
+]
+
+eps=0.11
+Minpts=5
+Omega=list()
+clusters=[]
+
+def dist(a, b):
+    
+    return math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2)
+
+def eps_neighbor(a,b,e):
+    if dist(a,b)<=e:
+        return True
+    else:
+        return False
+
+
+for i,value1 in enumerate(data):
+    n=0
+    for j,value2 in enumerate(data):
+        if dist(value1,value2)<=eps:
+            n=n+1
+    if n>=Minpts:
+        Omega.append(data[i])
+
+print("核心点:",Omega)
+
+
+U=list()
+for point in data:
+    U.append(point)
+
+while Omega:
+    Core=choice(Omega)
+    Omega.remove(Core)
+    for u in U:
+        if u==Core:
+            U.remove(u)
+    C=[Core]
+    while True:
+        new_points=[]
+        for point in U:
+            if any(eps_neighbor(point, c, eps) for c in C):
+                new_points.append(point)
+
+        if new_points:
+            C.extend(new_points)
+            U = [u for u in U if u not in new_points]
+        else:
+            break
+    clusters.append(C)
+    print(f"Cluster {len(clusters)}:")
+    print(C)
+
+
+plt.figure(figsize=(8, 6))
+for i, cluster in enumerate(clusters):
+    cluster_np = np.array(cluster)
+    plt.scatter(cluster_np[:, 0], cluster_np[:, 1], label=f'Cluster {i + 1}')
+
+plt.title('DBSCAN Clustering')
+plt.xlabel('X-axis')
+plt.ylabel('Y-axis')
+plt.legend()
+plt.grid()
+plt.show()
